@@ -1,74 +1,76 @@
 <template>
 	<div class="relative h-full w-full overflow-y-auto">
 		<div v-if="data" class="flex h-full w-full flex-col">
-			<div class="gap-2">
-				<div class="card flex flex-col gap-4">
-					<label for="server-name-field" class="flex flex-col gap-2">
-						<span class="text-lg font-bold text-contrast">Server name</span>
-						<span> This name is only visible on Modrinth.</span>
-					</label>
-					<div class="flex flex-col gap-2">
-						<StyledInput
-							id="server-name-field"
-							v-model="serverName"
-							wrapper-class="w-full md:w-[50%]"
-							:maxlength="48"
-							@keyup.enter="!serverName && saveGeneral"
-						/>
-						<span v-if="!serverName" class="text-sm text-rose-400">
-							Server name must be at least 1 character long.
-						</span>
-						<span v-if="!isValidServerName" class="text-sm text-rose-400">
-							Server name can contain any character.
-						</span>
-					</div>
-				</div>
-				<!-- WIP - disable for now
-        <div class="card flex flex-col gap-4">
-          <label for="server-motd-field" class="flex flex-col gap-2">
-            <span class="text-lg font-bold text-contrast">Server MOTD</span>
-            <span>
-              The message of the day is the message that players see when they log in to the server.
-            </span>
-          </label>
-          <UiServersMOTDEditor :server="props.server" />
-        </div>
-        -->
+			<div class="card flex flex-col gap-6">
+				<div class="flex justify-start gap-16">
+					<div class="flex max-w-[500px] grow flex-col gap-6">
+						<!-- Server name -->
+						<div class="flex flex-col gap-2.5">
+							<label for="server-name-field" class="flex flex-col gap-2">
+								<span class="text-md font-semibold text-contrast">Server name</span>
+							</label>
+							<div class="flex flex-col gap-2.5">
+								<StyledInput
+									id="server-name-field"
+									v-model="serverName"
+									wrapper-class="w-full"
+									:maxlength="48"
+									@keyup.enter="!serverName && saveGeneral"
+								/>
+								<span v-if="!serverName" class="text-sm text-rose-400">
+									Server name must be at least 1 character long.
+								</span>
+								<span v-if="!isValidServerName" class="text-sm text-rose-400">
+									Server name can contain any character.
+								</span>
+							</div>
+							<span> This name is only visible on Modrinth.</span>
+						</div>
 
-				<div class="card flex flex-col gap-4">
-					<label for="server-subdomain" class="flex flex-col gap-2">
-						<span class="text-lg font-bold text-contrast">Custom URL</span>
-						<span> Your friends can connect to your server using this URL. </span>
-					</label>
-					<div class="flex w-full items-center gap-2 md:w-[60%]">
-						<StyledInput
-							id="server-subdomain"
-							v-model="serverSubdomain"
-							wrapper-class="h-[50%] w-[63%]"
-							:maxlength="32"
-							@keyup.enter="saveGeneral"
-						/>
-						.modrinth.gg
+						<!-- Hostname -->
+						<div class="flex flex-col gap-2.5">
+							<label for="server-subdomain" class="flex flex-col gap-2.5">
+								<span class="text-md font-semibold text-contrast">Hostname</span>
+								<div class="text-input-wrapper !w-full px-3">
+									<div class="relative inline-flex min-h-9 min-w-[5ch] items-center">
+										<span
+											class="pointer-events-none invisible whitespace-pre text-base font-medium"
+											aria-hidden="true"
+											>{{ serverSubdomain || 'subdomain' }}</span
+										>
+										<input
+											id="server-subdomain"
+											:value="serverSubdomain"
+											placeholder="subdomain"
+											:maxlength="32"
+											class="absolute inset-0 bg-transparent !p-0 text-base font-medium text-primary outline-none transition-colors placeholder:text-secondary focus:text-contrast"
+											@input="serverSubdomain = ($event.target as HTMLInputElement).value"
+											@keyup.enter="saveGeneral"
+										/>
+									</div>
+									<div class="text-input-wrapper__after">.modrinth.gg</div>
+								</div>
+							</label>
+							<span> Your friends can connect to your server using this URL. </span>
+							<div v-if="!isValidSubdomain" class="flex flex-col text-sm text-red">
+								<span v-if="!isValidLengthSubdomain">
+									Subdomain must be at least 5 characters long.
+								</span>
+								<span v-if="!isValidCharsSubdomain">
+									Subdomain can only contain alphanumeric characters and dashes.
+								</span>
+							</div>
+						</div>
 					</div>
-					<div v-if="!isValidSubdomain" class="flex flex-col text-sm text-rose-400">
-						<span v-if="!isValidLengthSubdomain">
-							Subdomain must be at least 5 characters long.
-						</span>
-						<span v-if="!isValidCharsSubdomain">
-							Subdomain can only contain alphanumeric characters and dashes.
-						</span>
-					</div>
-				</div>
 
-				<div v-if="!data.is_medal" class="card flex flex-col gap-4">
-					<label for="server-icon-field" class="flex flex-col gap-2">
-						<span class="text-lg font-bold text-contrast">Server icon</span>
-						<span> This icon will be visible on the Minecraft server list and on Modrinth. </span>
-					</label>
-					<div class="flex gap-4">
+					<!-- Server icon -->
+					<div v-if="!data.is_medal" class="flex flex-col gap-2.5">
+						<label for="server-icon-field" class="flex flex-col gap-2">
+							<span class="text-md font-semibold text-contrast">Icon</span>
+						</label>
 						<div
 							v-tooltip="'Upload a custom Icon'"
-							class="group relative flex w-fit cursor-pointer items-center gap-2 rounded-xl bg-table-alternateRow"
+							class="group relative flex w-fit cursor-pointer items-center gap-2 rounded-xl bg-surface-2"
 							@dragover.prevent="onDragOver"
 							@dragleave.prevent="onDragLeave"
 							@drop.prevent="onDrop"
@@ -89,15 +91,54 @@
 							</div>
 							<ServerIcon class="size-24" :image="icon" />
 						</div>
-						<ButtonStyled>
-							<button
-								v-tooltip="'Synchronize icon with installed modpack'"
-								class="my-auto"
-								@click="resetIcon"
-							>
+						<ButtonStyled size="small">
+							<button v-tooltip="'Synchronize icon with installed modpack'" @click="resetIcon">
 								<TransferIcon /> Sync icon
 							</button>
 						</ButtonStyled>
+					</div>
+				</div>
+
+				<!-- preferences -->
+				<div
+					v-for="(prefConfig, key) in preferences"
+					:key="key"
+					class="flex items-center justify-between gap-2"
+				>
+					<label :for="`pref-${key}`" class="flex flex-col gap-2">
+						<div class="flex flex-row items-center gap-2">
+							<span class="text-md font-semibold text-contrast">{{ prefConfig.displayName }}</span>
+							<div
+								v-if="prefConfig.implemented === false"
+								class="hidden items-center gap-1 rounded-full bg-surface-2 p-1 px-1.5 text-xs font-semibold sm:flex"
+							>
+								Coming Soon
+							</div>
+						</div>
+						<span>{{ prefConfig.description }}</span>
+					</label>
+					<Toggle
+						:id="`pref-${key}`"
+						v-model="newUserPreferences[key]"
+						class="flex-none"
+						:disabled="prefConfig.implemented === false"
+					/>
+				</div>
+
+				<!-- Info -->
+				<div class="flex flex-col gap-2.5">
+					<div class="text-md m-0 font-semibold text-contrast">Info</div>
+					<div class="flex flex-col gap-2.5 rounded-xl bg-surface-2 p-4">
+						<div
+							v-for="property in infoProperties"
+							:key="property.name"
+							class="flex items-center justify-between gap-4"
+						>
+							<template v-if="property.value !== 'Unknown'">
+								<span>{{ property.name }}</span>
+								<CopyCode :text="property.value" />
+							</template>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -116,14 +157,17 @@
 <script setup lang="ts">
 import { EditIcon, TransferIcon } from '@modrinth/assets'
 import {
+	CopyCode,
 	injectModrinthClient,
 	injectModrinthServerContext,
 	injectNotificationManager,
 	ServerIcon,
 	StyledInput,
+	Toggle,
 } from '@modrinth/ui'
 import ButtonStyled from '@modrinth/ui/src/components/base/ButtonStyled.vue'
 import { useQueryClient } from '@tanstack/vue-query'
+import { useStorage } from '@vueuse/core'
 
 import SaveBanner from '~/components/ui/servers/SaveBanner.vue'
 
@@ -141,11 +185,6 @@ const isValidSubdomain = computed(() => isValidLengthSubdomain.value && isValidC
 const icon = useState<string | undefined>(`server-icon-${serverId}`)
 
 const isUpdating = ref(false)
-const hasUnsavedChanges = computed(
-	() =>
-		(serverName.value && serverName.value !== data.value?.name) ||
-		serverSubdomain.value !== data.value?.net?.domain,
-)
 const isValidServerName = computed(() => (serverName.value?.length ?? 0) > 0)
 
 watch(serverName, (oldValue) => {
@@ -153,6 +192,65 @@ watch(serverName, (oldValue) => {
 		serverName.value = oldValue
 	}
 })
+
+// Preferences
+const preferences = {
+	hideSubdomainLabel: {
+		displayName: 'Hide subdomain label',
+		description: 'When enabled, the subdomain label will be hidden from the server header.',
+		implemented: true,
+	},
+	autoRestart: {
+		displayName: 'Auto restart',
+		description: 'When enabled, your server will automatically restart if it crashes.',
+		implemented: false,
+	},
+	ramAsNumber: {
+		displayName: 'RAM as bytes',
+		description:
+			"When enabled, RAM will be displayed as bytes instead of a percentage in your server's Overview.",
+		implemented: true,
+	},
+	powerDontAskAgain: {
+		displayName: 'Power actions confirmation',
+		description: 'When enabled, you will be prompted before stopping and restarting your server.',
+		implemented: true,
+	},
+} as const
+
+type PreferenceKeys = keyof typeof preferences
+
+type UserPreferences = {
+	[K in PreferenceKeys]: boolean
+}
+
+const defaultPreferences: UserPreferences = {
+	hideSubdomainLabel: false,
+	autoRestart: false,
+	ramAsNumber: false,
+	powerDontAskAgain: false,
+}
+
+const userPreferences = useStorage<UserPreferences>(
+	`pyro-server-${serverId}-preferences`,
+	defaultPreferences,
+)
+
+const newUserPreferences = ref<UserPreferences>(JSON.parse(JSON.stringify(userPreferences.value)))
+
+// Info properties
+const infoProperties = [
+	{ name: 'Server ID', value: serverId ?? 'Unknown' },
+	{ name: 'Node', value: data.value?.node?.instance ?? 'Unknown' },
+]
+
+// Unsaved changes tracking (API fields + preferences)
+const hasUnsavedChanges = computed(
+	() =>
+		(serverName.value && serverName.value !== data.value?.name) ||
+		serverSubdomain.value !== data.value?.net?.domain ||
+		JSON.stringify(newUserPreferences.value) !== JSON.stringify(userPreferences.value),
+)
 
 const saveGeneral = async () => {
 	if (!isValidServerName.value || !isValidSubdomain.value) return
@@ -189,6 +287,10 @@ const saveGeneral = async () => {
 				return
 			}
 		}
+
+		// Save preferences to localStorage
+		userPreferences.value = { ...newUserPreferences.value }
+
 		await new Promise((resolve) => setTimeout(resolve, 500))
 		await queryClient.invalidateQueries({ queryKey: ['servers', 'detail', serverId] })
 		addNotification({
@@ -211,6 +313,7 @@ const saveGeneral = async () => {
 const resetGeneral = () => {
 	serverName.value = data.value?.name || ''
 	serverSubdomain.value = data.value?.net?.domain ?? ''
+	newUserPreferences.value = { ...userPreferences.value }
 }
 
 const uploadFile = async (e: Event) => {
