@@ -20,7 +20,7 @@ import {
 	TrashIcon,
 	UploadIcon,
 } from '@modrinth/assets'
-import { formatBytes, formatProjectType } from '@modrinth/utils'
+import { formatBytes } from '@modrinth/utils'
 import { computed, ref, watch } from 'vue'
 
 import Admonition from '#ui/components/base/Admonition.vue'
@@ -228,7 +228,6 @@ const { selectedFilters, filterOptions, toggleFilter, applyFilters } = useConten
 		showUpdateFilter: ctx.hasUpdateSupport,
 		showClientOnlyFilter: ctx.showClientOnlyFilter ?? false,
 		isPackLocked: ctx.isPackLocked,
-		formatProjectType,
 		persistKey: ctx.filterPersistKey,
 	},
 )
@@ -877,7 +876,7 @@ const confirmUnlinkModal = ref<InstanceType<typeof ConfirmUnlinkModal>>()
 			:count="pendingDeletionItems.length"
 			:item-type="ctx.contentTypeLabel.value"
 			:variant="ctx.deletionContext ?? 'instance'"
-			:backup-tip="pendingDeletionItems.map((i) => i.project.title).join(', ')"
+			:backup-tip="pendingDeletionItems.map((i) => i.project?.title ?? i.file_name).join(', ')"
 			@delete="confirmDelete"
 		/>
 		<ConfirmBulkUpdateModal

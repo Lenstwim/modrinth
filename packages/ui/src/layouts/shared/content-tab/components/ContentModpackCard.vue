@@ -5,7 +5,7 @@ import {
 	DownloadIcon,
 	HeartIcon,
 	MoreVerticalIcon,
-	SettingsIcon,
+	Settings2Icon,
 	SpinnerIcon,
 	XIcon,
 } from '@modrinth/assets'
@@ -21,7 +21,7 @@ import OverflowMenu, {
 	type Option as OverflowMenuOption,
 } from '#ui/components/base/OverflowMenu.vue'
 import TagItem from '#ui/components/base/TagItem.vue'
-import TeleportOverflowMenu from '#ui/components/servers/files/explorer/TeleportOverflowMenu.vue'
+import TeleportOverflowMenu from '#ui/components/base/TeleportOverflowMenu.vue'
 import { useRelativeTime } from '#ui/composables/how-ago'
 import { defineMessages, useVIntl } from '#ui/composables/i18n'
 import { commonMessages } from '#ui/utils/common-messages'
@@ -36,10 +36,6 @@ import type {
 const { formatMessage } = useVIntl()
 
 const messages = defineMessages({
-	updating: {
-		id: 'content.modpack-card.updating',
-		defaultMessage: 'Updating...',
-	},
 	contentHintTitle: {
 		id: 'content.modpack-card.content-hint-title',
 		defaultMessage: 'Modpack content moved',
@@ -195,7 +191,7 @@ onUnmounted(() => {
 					<div class="flex items-center gap-2 text-secondary">
 						<SpinnerIcon class="animate-spin" />
 						<span class="font-semibold">{{
-							disabledText ?? formatMessage(messages.updating)
+							disabledText ?? formatMessage(commonMessages.updatingLabel)
 						}}</span>
 					</div>
 				</template>
@@ -268,7 +264,7 @@ onUnmounted(() => {
 									}
 								"
 							>
-								<SettingsIcon />
+								<Settings2Icon />
 							</button>
 						</ButtonStyled>
 					</div>
@@ -305,7 +301,7 @@ onUnmounted(() => {
 									{{ formatMessage(commonMessages.contentLabel) }}
 								</template>
 								<template #settings>
-									<SettingsIcon class="size-5" />
+									<Settings2Icon class="size-5" />
 									{{ formatMessage(commonMessages.settingsLabel) }}
 								</template>
 							</TeleportOverflowMenu></ButtonStyled

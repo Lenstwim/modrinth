@@ -19,8 +19,8 @@ import BulletDivider from '#ui/components/base/BulletDivider.vue'
 import ButtonStyled from '#ui/components/base/ButtonStyled.vue'
 import Checkbox from '#ui/components/base/Checkbox.vue'
 import type { Option as OverflowMenuOption } from '#ui/components/base/OverflowMenu.vue'
+import TeleportOverflowMenu from '#ui/components/base/TeleportOverflowMenu.vue'
 import Toggle from '#ui/components/base/Toggle.vue'
-import TeleportOverflowMenu from '#ui/components/servers/files/explorer/TeleportOverflowMenu.vue'
 import { useVIntl } from '#ui/composables/i18n'
 import { commonMessages } from '#ui/utils/common-messages'
 import { truncatedTooltip } from '#ui/utils/truncate'
@@ -94,7 +94,7 @@ const deleteHovered = ref(false)
 		<div
 			class="flex min-w-0 items-center gap-4"
 			:class="
-				hideActions ? 'flex-1' : 'flex-1 @[800px]:w-[350px] @[800px]:shrink-0 @[800px]:flex-none'
+				hideActions ? 'flex-1' : 'flex-1 @[800px]:w-[45%] @[800px]:shrink-0 @[800px]:flex-none'
 			"
 		>
 			<Checkbox

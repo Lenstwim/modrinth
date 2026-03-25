@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+	ArrowLeftRightIcon,
 	BoxIcon,
 	FilterIcon,
 	GlassesIcon,
@@ -7,7 +8,6 @@ import {
 	SearchIcon,
 	SpinnerIcon,
 } from '@modrinth/assets'
-import { formatProjectType } from '@modrinth/utils'
 import Fuse from 'fuse.js'
 import { computed, nextTick, ref, watchSyncEffect } from 'vue'
 
@@ -18,7 +18,12 @@ import type { Option as OverflowMenuOption } from '#ui/components/base/OverflowM
 import StyledInput from '#ui/components/base/StyledInput.vue'
 import NewModal from '#ui/components/modal/NewModal.vue'
 import { defineMessages, useVIntl } from '#ui/composables/i18n'
-import { commonMessages } from '#ui/utils/common-messages'
+import {
+	commonMessages,
+	commonProjectTypeCategoryMessages,
+	commonProjectTypeTitleMessages,
+	normalizeProjectType,
+} from '#ui/utils/common-messages'
 
 import { isClientOnlyEnvironment } from '../../composables/content-filtering'
 import type { ContentCardTableItem, ContentItem } from '../../types'
@@ -32,6 +37,7 @@ interface Props {
 	modpackIconUrl?: string
 	enableToggle?: boolean
 	getOverflowOptions?: (item: ContentItem) => OverflowMenuOption[]
+	switchVersion?: (item: ContentItem) => void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -39,6 +45,7 @@ const props = withDefaults(defineProps<Props>(), {
 	modpackIconUrl: undefined,
 	enableToggle: false,
 	getOverflowOptions: undefined,
+	switchVersion: undefined,
 })
 
 const emit = defineEmits<{
@@ -71,14 +78,6 @@ const messages = defineMessages({
 	noResults: {
 		id: 'instances.modpack-content-modal.no-results',
 		defaultMessage: 'No projects match your search.',
-	},
-	allFilter: {
-		id: 'instances.modpack-content-modal.filter-all',
-		defaultMessage: 'All',
-	},
-	copyLink: {
-		id: 'instances.modpack-content-modal.copy-link',
-		defaultMessage: 'Copy link',
 	},
 })
 
@@ -133,25 +132,30 @@ watchSyncEffect(() => fuse.setCollection(items.value))
 const filterOptions = computed(() => {
 	const frequency = items.value.reduce(
 		(map, item) => {
-			map[item.project_type] = (map[item.project_type] || 0) + 1
+			const normalized = normalizeProjectType(item.project_type)
+			map[normalized] = (map[normalized] || 0) + 1
 			return map
 		},
 		{} as Record<string, number>,
 	)
 
-	// Sort by frequency (most common first)
 	return Object.entries(frequency)
 		.sort(([, a], [, b]) => b - a)
-		.map(([type]) => ({
-			id: type,
-			label: formatProjectType(type) + 's',
-		}))
+		.map(([type]) => {
+			const msg =
+				commonProjectTypeCategoryMessages[type as keyof typeof commonProjectTypeCategoryMessages]
+			return {
+				id: type,
+				label: msg ? formatMessage(msg) : type.charAt(0).toUpperCase() + type.slice(1) + 's',
+			}
+		})
 })
 
 const stats = computed(() => {
 	const counts: Record<string, number> = {}
 	for (const item of items.value) {
-		counts[item.project_type] = (counts[item.project_type] || 0) + 1
+		const normalized = normalizeProjectType(item.project_type)
+		counts[normalized] = (counts[normalized] || 0) + 1
 	}
 	return counts
 })
@@ -167,7 +171,9 @@ function toggleFilter(filterId: string) {
 
 const typeFilteredCount = computed(() => {
 	if (selectedFilters.value.length === 0) return items.value.length
-	return items.value.filter((item) => selectedFilters.value.includes(item.project_type)).length
+	return items.value.filter((item) =>
+		selectedFilters.value.includes(normalizeProjectType(item.project_type)),
+	).length
 })
 
 const filteredItems = computed(() => {
@@ -186,7 +192,9 @@ const filteredItems = computed(() => {
 
 	// Apply type filters
 	if (selectedFilters.value.length > 0) {
-		result = result.filter((item) => selectedFilters.value.includes(item.project_type))
+		result = result.filter((item) =>
+			selectedFilters.value.includes(normalizeProjectType(item.project_type)),
+		)
 	}
 
 	return result
@@ -216,7 +224,18 @@ const tableItems = computed<ContentCardTableItem[]>(() =>
 		...(props.enableToggle ? { enabled: item.enabled } : {}),
 		isClientOnly: isClientOnlyEnvironment(item.environment),
 		disabled: disabledIds.value.has(item.file_name),
-		overflowOptions: props.getOverflowOptions?.(item),
+		overflowOptions: [
+			...(props.switchVersion
+				? [
+						{
+							id: formatMessage(commonMessages.switchVersionButton),
+							icon: ArrowLeftRightIcon,
+							action: () => props.switchVersion!(item),
+						},
+					]
+				: []),
+			...(props.getOverflowOptions?.(item) ?? []),
+		],
 	})),
 )
 
@@ -357,7 +376,7 @@ defineExpose({ show, showLoading, hide, getState, restore, updateItem })
 							"
 							@click="selectedFilters = []"
 						>
-							{{ formatMessage(messages.allFilter) }}
+							{{ formatMessage(commonMessages.allProjectType) }}
 						</button>
 						<button
 							v-for="option in filterOptions"
@@ -475,7 +494,17 @@ defineExpose({ show, showLoading, hide, getState, restore, updateItem })
 						<div class="flex items-center gap-1.5">
 							<component :is="getTypeIcon(type as string)" class="size-5 text-secondary" />
 							<span class="font-medium text-primary">
-								{{ count }} {{ formatProjectType(type as string) }}{{ count !== 1 ? 's' : '' }}
+								{{ count }}
+								{{
+									formatMessage(
+										commonProjectTypeTitleMessages[
+											normalizeProjectType(
+												type as string,
+											) as keyof typeof commonProjectTypeTitleMessages
+										] ?? commonProjectTypeTitleMessages.project,
+										{ count },
+									)
+								}}
 							</span>
 						</div>
 					</template>
