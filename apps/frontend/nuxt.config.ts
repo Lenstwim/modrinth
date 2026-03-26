@@ -457,6 +457,7 @@ export default defineNuxtConfig({
 			// @ts-expect-error it's not infinite.
 			plugins: [serverSidedVue()],
 		},
+		preset: 'vercel',
 	},
 	devtools: {
 		enabled: true,
